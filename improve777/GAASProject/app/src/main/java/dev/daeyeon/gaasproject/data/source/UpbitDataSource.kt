@@ -1,21 +1,19 @@
 package dev.daeyeon.gaasproject.data.source
 
+import dev.daeyeon.gaasproject.data.NetResult
 import dev.daeyeon.gaasproject.data.Ticker
+import kotlinx.coroutines.flow.Flow
 
 interface UpbitDataSource {
 
     var markets: String
 
-    fun getTicker(
+    suspend fun getTicker(
         baseCurrency: String,
-        searchTicker: String,
-        success: (tickerList: List<Ticker>) -> Unit,
-        fail: (msg: String) -> Unit
-    )
+        searchTicker: String
+    ): Flow<NetResult<List<Ticker>>>
 
-    fun getMarkets(success: (markets: String) -> Unit, fail: (msg: String) -> Unit)
-
-    fun unsubscribeTicker()
+    suspend fun getMarkets(): Flow<NetResult<String>>
 
     companion object {
         const val ALL_CURRENCY = "전체"

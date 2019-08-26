@@ -3,14 +3,25 @@ package dev.daeyeon.gaasproject.ui.ticker
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import dev.daeyeon.gaasproject.base.BaseCoroutineScope
 import dev.daeyeon.gaasproject.base.BaseViewModel
+import dev.daeyeon.gaasproject.data.NetResult
 import dev.daeyeon.gaasproject.data.Ticker
 import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.util.Event
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 
 class TickerViewModel(
     private val upbitRepository: UpbitDataSource
-) : BaseViewModel() {
+) : BaseViewModel(), BaseCoroutineScope {
+
+    override val job: Job = SupervisorJob()
+
+    override fun releaseCoroutine() {
+        Log.e("TickerViewModel", "releaseCoroutine")
+        job.cancel()
+    }
 
     private val _tickerList = MutableLiveData<List<Ticker>>(emptyList())
     val tickerList: LiveData<List<Ticker>>
@@ -39,20 +50,28 @@ class TickerViewModel(
     }
 
     fun loadUpbitTicker() {
-        _isShowProgressBar.value = true
-
-        upbitRepository.getTicker(
-            baseCurrency = _baseMarket.value ?: UpbitDataSource.ALL_MARKET,
-            searchTicker = searchText.value ?: UpbitDataSource.ALL_CURRENCY,
-            success = {
-                _isShowProgressBar.value = false
-                _tickerList.value = it
-            },
-            fail = {
-                _isShowProgressBar.value = false
-                _failMsgEvent.value = Event(it)
+        CoroutineScope(Dispatchers.IO + job).launch {
+            upbitRepository.getTicker(
+                baseCurrency = _baseMarket.value ?: UpbitDataSource.ALL_MARKET,
+                searchTicker = searchText.value ?: UpbitDataSource.ALL_CURRENCY
+            ).collect {
+                withContext(Dispatchers.Main + job) {
+                    when (it) {
+                        is NetResult.Success -> {
+                            _isShowProgressBar.value = false
+                            _tickerList.value = it.data
+                        }
+                        is NetResult.Error -> {
+                            _isShowProgressBar.value = false
+                            _failMsgEvent.value = Event(it.toString())
+                        }
+                        NetResult.Loading -> {
+                            _isShowProgressBar.value = true
+                        }
+                    }
+                }
             }
-        )
+        }
     }
 
     fun setBaseMarket(newBaseMarket: String) {
@@ -66,13 +85,10 @@ class TickerViewModel(
 
     fun getMarkets(): String = upbitRepository.markets
 
-    fun cancelApi() {
-        upbitRepository.unsubscribeTicker()
-    }
 
     override fun onCleared() {
         Log.e("TickerViewModel", "onCleared()")
-        cancelApi()
+        releaseCoroutine()
         super.onCleared()
     }
 }

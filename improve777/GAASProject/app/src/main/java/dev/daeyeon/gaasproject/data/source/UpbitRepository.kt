@@ -1,96 +1,77 @@
 package dev.daeyeon.gaasproject.data.source
 
+import dev.daeyeon.gaasproject.data.NetResult
 import dev.daeyeon.gaasproject.data.Ticker
-import dev.daeyeon.gaasproject.data.response.ResponseCode
 import dev.daeyeon.gaasproject.network.UpbitApi
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import java.util.*
 
 class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
 
     override var markets: String = ""
 
-    private val compositeDisposable = CompositeDisposable()
-
-    override fun getTicker(
+    override suspend fun getTicker(
         baseCurrency: String,
-        searchTicker: String,
-        success: (tickerList: List<Ticker>) -> Unit,
-        fail: (msg: String) -> Unit
-    ) {
-        getMarkets(
-            success = { result ->
-                markets = result
+        searchTicker: String
+    ): Flow<NetResult<List<Ticker>>> = flow {
 
-                if (compositeDisposable.size() >= 1) {
-                    unsubscribeTicker()
+        emit(NetResult.loading())
+
+        getMarkets().collect {
+            when (it) {
+                is NetResult.Success -> {
+                    markets = it.data
+
+                    while (true) {
+                        emit(
+                            NetResult.success(
+                                upbitApi.getTicker(markets)
+                                    .filter { list ->
+                                        list.market.contains(
+                                            "$baseCurrency-" +
+                                                    if (searchTicker == UpbitDataSource.ALL_CURRENCY) {
+                                                        ""
+                                                    } else {
+                                                        searchTicker.toUpperCase(Locale.KOREA)
+                                                    }
+                                        )
+                                    }
+                                    .map { response -> response.toTicker() }
+                            )
+                        )
+                        delay(5000L)
+                    }
                 }
 
-                Observable.interval(0, 5000, TimeUnit.MILLISECONDS)
-                    .flatMap { upbitApi.getTicker(markets) }
-                    .subscribeOn(Schedulers.io())
-                    .map {
-                        it.filter {
-                            it.market.contains(
-                                "$baseCurrency-" +
-                                        if (searchTicker == UpbitDataSource.ALL_CURRENCY) {
-                                            ""
-                                        } else {
-                                            searchTicker.toUpperCase()
-                                        }
-                            )
-                        }
-                            .map { response -> response.toTicker() }
-                    }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { tickerList ->
-                            if (tickerList.isEmpty()) {
-                                fail.invoke(ResponseCode.CODE_EMPTY_SUCCESS)
-                            } else {
-                                success.invoke(tickerList)
-                            }
-                        },
-                        { t ->
-                            fail.invoke(t.message ?: ResponseCode.CODE_NULL_FAIL_MSG)
-                        }
-                    )
-                    .addTo(compositeDisposable)
-            },
-            fail = {
-                fail.invoke(it)
-            }
-        )
-    }
+                is NetResult.Error -> {
+                    emit(NetResult.error(Exception(it.toString())))
+                }
 
-    override fun getMarkets(success: (markets: String) -> Unit, fail: (msg: String) -> Unit) {
-        if (markets.isEmpty()) {
-            upbitApi.getMarketCode().let {
-                it.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { marketList ->
-                            if (marketList.isEmpty()) {
-                                fail.invoke(ResponseCode.CODE_EMPTY_SUCCESS)
-                            } else {
-                                success.invoke(marketList.joinToString(separator = ",") { it.market })
-                            }
-                        },
-                        { t ->
-                            fail.invoke(t.message ?: ResponseCode.CODE_NULL_FAIL_MSG)
-                        }
-                    )
+                NetResult.Loading -> {
+                    emit(NetResult.loading())
+                }
             }
-        } else {
-            success.invoke(markets)
         }
     }
 
-    override fun unsubscribeTicker() {
-        compositeDisposable.clear()
+    override suspend fun getMarkets(): Flow<NetResult<String>> = flow {
+        emit(NetResult.loading())
+        try {
+            if (markets.isEmpty()) {
+                emit(
+                    NetResult.success(
+                        upbitApi.getMarketCode().joinToString(separator = ",") { it.market }
+                    )
+                )
+            } else {
+                emit(NetResult.success(markets))
+            }
+
+        } catch (e: Exception) {
+            emit(NetResult.error(e))
+        }
     }
 }
