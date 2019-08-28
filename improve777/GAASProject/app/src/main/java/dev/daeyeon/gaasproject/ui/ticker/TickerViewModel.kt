@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import dev.daeyeon.gaasproject.base.BaseCoroutineScope
 import dev.daeyeon.gaasproject.base.BaseViewModel
-import dev.daeyeon.gaasproject.data.NetResult
-import dev.daeyeon.gaasproject.data.Ticker
+import dev.daeyeon.gaasproject.data.StateResult
+import dev.daeyeon.gaasproject.data.entity.Ticker
 import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.util.Event
 import kotlinx.coroutines.*
@@ -62,15 +62,15 @@ class TickerViewModel(
                     .collect {
                         withContext(Dispatchers.Main + job) {
                             when (it) {
-                                is NetResult.Success -> {
+                                is StateResult.Success -> {
                                     _isShowProgressBar.value = false
                                     _tickerList.value = it.data
                                 }
-                                is NetResult.Error -> {
+                                is StateResult.Error -> {
                                     _isShowProgressBar.value = false
                                     _failMsgEvent.value = Event(it.toString())
                                 }
-                                NetResult.Loading -> {
+                                StateResult.Loading -> {
                                     _isShowProgressBar.value = true
                                 }
                             }

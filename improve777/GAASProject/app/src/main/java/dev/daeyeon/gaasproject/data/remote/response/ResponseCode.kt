@@ -1,4 +1,4 @@
-package dev.daeyeon.gaasproject.data.response
+package dev.daeyeon.gaasproject.data.remote.response
 
 object ResponseCode {
     const val CODE_NULL_SUCCESS = "20"

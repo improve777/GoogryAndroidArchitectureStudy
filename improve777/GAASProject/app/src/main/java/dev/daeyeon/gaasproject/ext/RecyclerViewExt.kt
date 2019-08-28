@@ -2,7 +2,7 @@ package dev.daeyeon.gaasproject.ext
 
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import dev.daeyeon.gaasproject.data.Ticker
+import dev.daeyeon.gaasproject.data.entity.Ticker
 import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.ui.ticker.TickerAdapter
 import dev.daeyeon.gaasproject.ui.ticker.marketchoice.MarketChoiceAdapter

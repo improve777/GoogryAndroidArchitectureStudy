@@ -1,4 +1,4 @@
-package dev.daeyeon.gaasproject.data.response
+package dev.daeyeon.gaasproject.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 

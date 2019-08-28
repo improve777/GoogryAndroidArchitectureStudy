@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.daeyeon.gaasproject.R
-import dev.daeyeon.gaasproject.data.Ticker
+import dev.daeyeon.gaasproject.data.entity.Ticker
 import dev.daeyeon.gaasproject.databinding.ItemTickerBinding
 
 class TickerAdapter : RecyclerView.Adapter<TickerAdapter.TickerViewHolder>() {

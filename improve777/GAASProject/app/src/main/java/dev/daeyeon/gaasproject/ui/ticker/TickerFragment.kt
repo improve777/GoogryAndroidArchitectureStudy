@@ -8,7 +8,7 @@ import android.view.View
 import androidx.lifecycle.Observer
 import dev.daeyeon.gaasproject.R
 import dev.daeyeon.gaasproject.base.BaseFragment
-import dev.daeyeon.gaasproject.data.response.ResponseCode
+import dev.daeyeon.gaasproject.data.remote.response.ResponseCode
 import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.databinding.FragmentTickerBinding
 import dev.daeyeon.gaasproject.ext.popContent

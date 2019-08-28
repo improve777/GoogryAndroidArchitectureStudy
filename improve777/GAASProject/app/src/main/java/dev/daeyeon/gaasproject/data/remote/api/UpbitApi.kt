@@ -1,9 +1,7 @@
-package dev.daeyeon.gaasproject.network
+package dev.daeyeon.gaasproject.data.remote.api
 
-import dev.daeyeon.gaasproject.data.response.MarketResponse
-import dev.daeyeon.gaasproject.data.response.TickerResponse
-import io.reactivex.Observable
-import io.reactivex.Single
+import dev.daeyeon.gaasproject.data.remote.response.MarketResponse
+import dev.daeyeon.gaasproject.data.remote.response.TickerResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

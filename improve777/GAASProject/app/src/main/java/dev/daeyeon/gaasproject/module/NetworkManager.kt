@@ -1,6 +1,7 @@
-package dev.daeyeon.gaasproject.network
+package dev.daeyeon.gaasproject.module
 
 import dev.daeyeon.gaasproject.BuildConfig
+import dev.daeyeon.gaasproject.data.remote.api.UpbitApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

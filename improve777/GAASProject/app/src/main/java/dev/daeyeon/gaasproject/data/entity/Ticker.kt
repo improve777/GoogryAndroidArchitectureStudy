@@ -1,4 +1,4 @@
-package dev.daeyeon.gaasproject.data
+package dev.daeyeon.gaasproject.data.entity
 
 data class Ticker(
     val market: String,

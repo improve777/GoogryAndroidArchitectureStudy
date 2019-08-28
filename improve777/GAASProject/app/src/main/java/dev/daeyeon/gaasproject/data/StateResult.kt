@@ -4,11 +4,11 @@ package dev.daeyeon.gaasproject.data
  * A generic class that holds a value with its loading status.
  * @param <T>
  */
-sealed class NetResult<out R> {
+sealed class StateResult<out R> {
 
-    data class Success<out T>(val data: T) : NetResult<T>()
-    data class Error(val exception: Exception) : NetResult<Nothing>()
-    object Loading : NetResult<Nothing>()
+    data class Success<out T>(val data: T) : StateResult<T>()
+    data class Error(val exception: Exception) : StateResult<Nothing>()
+    object Loading : StateResult<Nothing>()
 
     override fun toString(): String {
         return when (this) {
