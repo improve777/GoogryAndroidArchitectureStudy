@@ -56,6 +56,7 @@ class TickerViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO + job) {
                 upbitRepository.getTicker(
+                    markets = "",
                     baseCurrency = _baseMarket.value ?: UpbitDataSource.ALL_MARKET,
                     searchTicker = searchText.value ?: UpbitDataSource.ALL_CURRENCY
                 )
@@ -88,9 +89,6 @@ class TickerViewModel(
                 newBaseMarket
             }
     }
-
-    fun getMarkets(): String = upbitRepository.markets
-
 
     override fun onCleared() {
         Log.e("TickerViewModel", "onCleared()")

@@ -1,4 +1,4 @@
-package dev.daeyeon.gaasproject.ui.ticker.marketchoice
+package dev.daeyeon.gaasproject.ui.marketchoice
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

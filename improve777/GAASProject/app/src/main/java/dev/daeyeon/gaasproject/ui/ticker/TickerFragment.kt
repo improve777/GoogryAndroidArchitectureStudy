@@ -5,14 +5,16 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import dev.daeyeon.gaasproject.R
 import dev.daeyeon.gaasproject.base.BaseFragment
+import dev.daeyeon.gaasproject.data.entity.Market
 import dev.daeyeon.gaasproject.data.remote.response.ResponseCode
 import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.databinding.FragmentTickerBinding
 import dev.daeyeon.gaasproject.ext.popContent
-import dev.daeyeon.gaasproject.ui.ticker.marketchoice.MarketChoiceDialogFragment
+import dev.daeyeon.gaasproject.ui.marketchoice.MarketChoiceDialogFragment
 import dev.daeyeon.gaasproject.ui.ticker.search.TickerSearchDialogFragment
 import dev.daeyeon.gaasproject.util.Event
 import org.jetbrains.anko.toast
@@ -68,7 +70,7 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
     private fun showBaseCurrencyDialog() {
         MarketChoiceDialogFragment.newInstance(
             oldMarket = tickerViewModel.baseMarket.value ?: UpbitDataSource.ALL_MARKET,
-            markets = tickerViewModel.getMarkets()
+            markets = ""
         ).show(childFragmentManager, null)
     }
 
@@ -116,8 +118,10 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
     companion object {
         const val TAG = "TickerFragment"
 
-        fun newInstance(): TickerFragment {
-            return TickerFragment()
+        private const val EXTRA_MARKET = "EXTRA_MARKET"
+
+        fun newInstance(market: Market): TickerFragment = TickerFragment().apply {
+            arguments = bundleOf(EXTRA_MARKET to market)
         }
     }
 }

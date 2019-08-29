@@ -1,4 +1,4 @@
-package dev.daeyeon.gaasproject.ui.ticker.marketchoice
+package dev.daeyeon.gaasproject.ui.marketchoice
 
 import android.view.LayoutInflater
 import android.view.MotionEvent

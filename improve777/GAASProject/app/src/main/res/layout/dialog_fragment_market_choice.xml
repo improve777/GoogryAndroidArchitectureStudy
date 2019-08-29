@@ -6,7 +6,7 @@
     <data>
         <variable
             name="choiceViewModel"
-            type="dev.daeyeon.gaasproject.ui.ticker.marketchoice.MarketChoiceViewModel" />
+            type="dev.daeyeon.gaasproject.ui.marketchoice.MarketChoiceViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -2,9 +2,11 @@ package dev.daeyeon.gaasproject.data.source
 
 import android.util.Log
 import dev.daeyeon.gaasproject.data.StateResult
+import dev.daeyeon.gaasproject.data.entity.Market
 import dev.daeyeon.gaasproject.data.entity.Ticker
-import dev.daeyeon.gaasproject.data.remote.response.TickerResponse
 import dev.daeyeon.gaasproject.data.remote.api.UpbitApi
+import dev.daeyeon.gaasproject.data.remote.response.MarketResponse
+import dev.daeyeon.gaasproject.data.remote.response.TickerResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -12,42 +14,26 @@ import java.util.*
 
 class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
 
-    override var markets: String = ""
-
     override suspend fun getTicker(
+        markets: String,
         baseCurrency: String,
         searchTicker: String
-    ): Flow<StateResult<List<Ticker>>> = getMarkets().flatMapMerge {
-        flow {
-            when (it) {
-                is StateResult.Success -> {
-                    markets = it.data
-
-                    while (true) {
-                        emit(
-                            StateResult.success(
-                                upbitApi.getTicker(markets)
-                                    .filter { tickerResponse ->
-                                        matchTicker(
-                                            tickerResponse,
-                                            getFilteringText(baseCurrency, searchTicker)
-                                        )
-                                    }
-                                    .map(TickerResponse::toTicker)
+    ): Flow<StateResult<List<Ticker>>> = flow {
+        emit(StateResult.loading())
+        while (true) {
+            emit(
+                StateResult.success(
+                    upbitApi.getTicker(markets)
+                        .filter { tickerResponse ->
+                            matchTicker(
+                                tickerResponse,
+                                getFilteringText(baseCurrency, searchTicker)
                             )
-                        )
-                        delay(5000L)
-                    }
-                }
-
-                is StateResult.Error -> {
-                    emit(StateResult.error(Exception(it.toString())))
-                }
-
-                StateResult.Loading -> {
-                    emit(StateResult.loading())
-                }
-            }
+                        }
+                        .map(TickerResponse::toTicker)
+                )
+            )
+            delay(5000L)
         }
     }
         // 에러 핸들링
@@ -72,20 +58,21 @@ class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
                 }
     }
 
-
-    override suspend fun getMarkets(): Flow<StateResult<String>> = flow {
-        emit(StateResult.loading())
-
-        if (markets.isEmpty()) {
-            emit(
-                StateResult.success(
-                    upbitApi.getMarketCode().joinToString(separator = ",") { it.market }
-                )
-            )
-        } else {
-            emit(StateResult.success(markets))
+    override suspend fun getMarkets(): Flow<StateResult<List<Market>>> =
+        flow {
+            emit(StateResult.loading())
+            emit(StateResult.success(upbitApi.getMarketCode()))
         }
-    }
-        .catch { e -> emit(StateResult.error(Exception(e))) }
-        .flowOn(Dispatchers.IO)
+            .catch { e -> emit(StateResult.error(Exception(e))) }
+            .map {
+                StateResult.success(
+                    (it as StateResult.Success).data
+                        .groupBy { response: MarketResponse -> response.market.substringBefore("-") }
+                        .map { (key, value) ->
+                            Market(
+                                currency = key,
+                                searchWord = value.joinToString { "," })
+                        }
+                )
+            }
 }
