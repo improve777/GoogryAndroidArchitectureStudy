@@ -30,13 +30,5 @@ class MainActivity : AppCompatActivity() {
                 vpMain.setCurrentItem(tab.position, true)
             }.attach()
         }
-
-/*        supportFragmentManager.commit {
-            replace(
-                R.id.container,
-                supportFragmentManager.findFragmentByTag(TickerFragment.TAG) ?: TickerFragment.newInstance(),
-                TickerFragment.TAG
-            )
-        }*/
     }
 }

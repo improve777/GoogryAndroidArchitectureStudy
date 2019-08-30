@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 
 class TickerViewModel(
+    private val markets: String,
     private val upbitRepository: UpbitDataSource
 ) : BaseViewModel(), BaseCoroutineScope {
 
@@ -38,12 +39,6 @@ class TickerViewModel(
      */
     val searchText = MutableLiveData("")
 
-    /**
-     * 기준 마켓
-     */
-    private val _baseMarket = MutableLiveData(UpbitDataSource.ALL_MARKET)
-    val baseMarket: LiveData<String> get() = _baseMarket
-
     init {
         loadUpbitTicker()
     }
@@ -55,11 +50,7 @@ class TickerViewModel(
 
         viewModelScope.launch {
             withContext(Dispatchers.IO + job) {
-                upbitRepository.getTicker(
-                    markets = "",
-                    baseCurrency = _baseMarket.value ?: UpbitDataSource.ALL_MARKET,
-                    searchTicker = searchText.value ?: UpbitDataSource.ALL_CURRENCY
-                )
+                upbitRepository.getTicker(markets = markets)
                     .collect {
                         withContext(Dispatchers.Main + job) {
                             when (it) {
@@ -79,15 +70,6 @@ class TickerViewModel(
                     }
             }
         }
-    }
-
-    fun setBaseMarket(newBaseMarket: String) {
-        _baseMarket.value =
-            if (newBaseMarket == UpbitDataSource.ALL_CURRENCY) {
-                ""
-            } else {
-                newBaseMarket
-            }
     }
 
     override fun onCleared() {

@@ -15,24 +15,11 @@ import java.util.*
 class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
 
     override suspend fun getTicker(
-        markets: String,
-        baseCurrency: String,
-        searchTicker: String
+        markets: String
     ): Flow<StateResult<List<Ticker>>> = flow {
         emit(StateResult.loading())
         while (true) {
-            emit(
-                StateResult.success(
-                    upbitApi.getTicker(markets)
-                        .filter { tickerResponse ->
-                            matchTicker(
-                                tickerResponse,
-                                getFilteringText(baseCurrency, searchTicker)
-                            )
-                        }
-                        .map(TickerResponse::toTicker)
-                )
-            )
+            emit(StateResult.success(upbitApi.getTicker(markets).map(TickerResponse::toTicker)))
             delay(5000L)
         }
     }
@@ -77,7 +64,7 @@ class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
                                 .map { (key, value) ->
                                     Market(
                                         currency = key,
-                                        searchWord = value.joinToString { "," })
+                                        searchWord = value.joinToString(separator = ",") { it.market })
                                 }
                         )
                     }

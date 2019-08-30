@@ -15,8 +15,6 @@ interface UpbitDataSource {
     }
 
     suspend fun getTicker(
-        markets: String,
-        baseCurrency: String,
-        searchTicker: String
+        markets: String
     ): Flow<StateResult<List<Ticker>>>
 }

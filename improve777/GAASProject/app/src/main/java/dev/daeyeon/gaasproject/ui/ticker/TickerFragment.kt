@@ -11,19 +11,25 @@ import dev.daeyeon.gaasproject.R
 import dev.daeyeon.gaasproject.base.BaseFragment
 import dev.daeyeon.gaasproject.data.entity.Market
 import dev.daeyeon.gaasproject.data.remote.response.ResponseCode
-import dev.daeyeon.gaasproject.data.source.UpbitDataSource
 import dev.daeyeon.gaasproject.databinding.FragmentTickerBinding
 import dev.daeyeon.gaasproject.ext.popContent
-import dev.daeyeon.gaasproject.ui.marketchoice.MarketChoiceDialogFragment
 import dev.daeyeon.gaasproject.ui.ticker.search.TickerSearchDialogFragment
 import dev.daeyeon.gaasproject.util.Event
 import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class TickerFragment : BaseFragment<FragmentTickerBinding>(
     R.layout.fragment_ticker
 ) {
-    private val tickerViewModel: TickerViewModel by viewModel()
+    private val tickerViewModel: TickerViewModel by viewModel { parametersOf(markets) }
+
+    private lateinit var markets: String
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        markets = arguments?.getParcelable<Market>(EXTRA_MARKET)?.searchWord ?: ""
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         bind {
@@ -39,6 +45,7 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
         inflater.inflate(R.menu.menu_ticker_fragment, menu)
     }
 
@@ -47,10 +54,6 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
             // 검색
             R.id.action_search -> {
                 showTickerSearchDialog()
-            }
-            // 기본 통화 설정
-            R.id.action_base_currency -> {
-                showBaseCurrencyDialog()
             }
         }
 
@@ -62,16 +65,6 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
      */
     private fun showTickerSearchDialog() {
         TickerSearchDialogFragment.newInstance().show(childFragmentManager, null)
-    }
-
-    /**
-     * 기본 통화 설정 다이얼로그
-     */
-    private fun showBaseCurrencyDialog() {
-        MarketChoiceDialogFragment.newInstance(
-            oldMarket = tickerViewModel.baseMarket.value ?: UpbitDataSource.ALL_MARKET,
-            markets = ""
-        ).show(childFragmentManager, null)
     }
 
     /**
@@ -106,18 +99,7 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
         }
     }
 
-    /**
-     * 마켓이 선택되면 ticker refresh
-     * @param chooseMarket
-     */
-    fun refreshTickerByChooseMarket(chooseMarket: String) {
-        tickerViewModel.setBaseMarket(chooseMarket)
-        tickerViewModel.loadUpbitTicker()
-    }
-
     companion object {
-        const val TAG = "TickerFragment"
-
         private const val EXTRA_MARKET = "EXTRA_MARKET"
 
         fun newInstance(market: Market): TickerFragment = TickerFragment().apply {
