@@ -5,5 +5,5 @@
     <item android:id="@+id/action_search"
         android:icon="@drawable/ticker_fragment_search_white_24dp"
         android:title="@string/ticker_search"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 </menu>

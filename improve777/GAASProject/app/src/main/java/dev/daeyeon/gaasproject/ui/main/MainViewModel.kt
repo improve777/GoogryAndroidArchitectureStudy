@@ -18,6 +18,11 @@ class MainViewModel(
     private val _marketList = MutableLiveData<List<Market>>()
     val marketList: LiveData<List<Market>> = _marketList
 
+    /**
+     * 검색어 two-way binding
+     */
+    val searchText = MutableLiveData("")
+
     init {
         getMarkets()
     }

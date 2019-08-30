@@ -10,7 +10,6 @@ import dev.daeyeon.gaasproject.data.remote.response.TickerResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import java.util.*
 
 class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
 
@@ -32,18 +31,6 @@ class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
         .conflate()
         // context 변경
         .flowOn(Dispatchers.IO)
-
-    private fun matchTicker(tickerResponse: TickerResponse, filteringText: String): Boolean =
-        tickerResponse.market.contains(filteringText)
-
-    private fun getFilteringText(baseCurrency: String, searchTicker: String): String {
-        return "$baseCurrency-" +
-                if (searchTicker == UpbitDataSource.ALL_CURRENCY) {
-                    ""
-                } else {
-                    searchTicker.toUpperCase(Locale.KOREA)
-                }
-    }
 
     override suspend fun getMarkets(): Flow<StateResult<List<Market>>> =
         flow {

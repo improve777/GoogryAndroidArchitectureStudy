@@ -1,9 +1,6 @@
 package dev.daeyeon.gaasproject.ui.ticker
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
@@ -12,16 +9,18 @@ import dev.daeyeon.gaasproject.base.BaseFragment
 import dev.daeyeon.gaasproject.data.entity.Market
 import dev.daeyeon.gaasproject.data.remote.response.ResponseCode
 import dev.daeyeon.gaasproject.databinding.FragmentTickerBinding
-import dev.daeyeon.gaasproject.ext.popContent
-import dev.daeyeon.gaasproject.ui.ticker.search.TickerSearchDialogFragment
-import dev.daeyeon.gaasproject.util.Event
+import dev.daeyeon.gaasproject.ui.main.MainViewModel
+import dev.daeyeon.gaasproject.util.EventObserver
 import org.jetbrains.anko.toast
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
 class TickerFragment : BaseFragment<FragmentTickerBinding>(
     R.layout.fragment_ticker
 ) {
+    private val mainViewModel: MainViewModel by sharedViewModel()
+
     private val tickerViewModel: TickerViewModel by viewModel { parametersOf(markets) }
 
     private lateinit var markets: String
@@ -38,33 +37,17 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
             lifecycleOwner = this@TickerFragment.viewLifecycleOwner
         }
 
-        setHasOptionsMenu(true)
         swipeInit()
 
         subscribeToFailMsg()
+
+        subscribeSearchText()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.menu_ticker_fragment, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            // 검색
-            R.id.action_search -> {
-                showTickerSearchDialog()
-            }
-        }
-
-        return false
-    }
-
-    /**
-     * ticker 검색 다이얼로그
-     */
-    private fun showTickerSearchDialog() {
-        TickerSearchDialogFragment.newInstance().show(childFragmentManager, null)
+    private fun subscribeSearchText() {
+        mainViewModel.searchText.observe(viewLifecycleOwner, Observer {
+            tickerViewModel.replaceTicker(it)
+        })
     }
 
     /**
@@ -83,10 +66,8 @@ class TickerFragment : BaseFragment<FragmentTickerBinding>(
      * failMsgEvent 구독
      */
     private fun subscribeToFailMsg() {
-        tickerViewModel.failMsgEvent.observe(this, Observer<Event<String>> { event ->
-            event.popContent {
-                toastTickerFailMsg(it)
-            }
+        tickerViewModel.failMsgEvent.observe(viewLifecycleOwner, EventObserver {
+            toastTickerFailMsg(it)
         })
     }
 

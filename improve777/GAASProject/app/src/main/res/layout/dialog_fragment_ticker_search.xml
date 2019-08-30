@@ -5,11 +5,11 @@
     <data>
         <variable
             name="viewModel"
-            type="dev.daeyeon.gaasproject.ui.ticker.TickerViewModel" />
+            type="dev.daeyeon.gaasproject.ui.main.MainViewModel" />
 
         <variable
             name="searchViewModel"
-            type="dev.daeyeon.gaasproject.ui.ticker.search.TickerSearchViewModel" />
+            type="dev.daeyeon.gaasproject.ui.search.TickerSearchViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

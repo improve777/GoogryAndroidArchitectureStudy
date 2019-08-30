@@ -20,11 +20,6 @@ class TickerViewModel(
 
     override var job: Job = SupervisorJob()
 
-    override fun releaseCoroutine() {
-        Log.e("TickerViewModel", "releaseCoroutine")
-        job.cancel()
-    }
-
     private val _tickerList = MutableLiveData<List<Ticker>>(emptyList())
     val tickerList: LiveData<List<Ticker>> = _tickerList
 
@@ -34,13 +29,15 @@ class TickerViewModel(
     private val _failMsgEvent = MutableLiveData<Event<String>>()
     val failMsgEvent: LiveData<Event<String>> = _failMsgEvent
 
-    /**
-     * 검색어 two-way binding
-     */
-    val searchText = MutableLiveData("")
+    var filteredMarket = ""
 
     init {
         loadUpbitTicker()
+    }
+
+    override fun releaseCoroutine() {
+        Log.e("TickerViewModel", "releaseCoroutine")
+        job.cancel()
     }
 
     fun loadUpbitTicker() {
@@ -56,7 +53,8 @@ class TickerViewModel(
                             when (it) {
                                 is StateResult.Success -> {
                                     _isShowProgressBar.value = false
-                                    _tickerList.value = it.data
+                                    _tickerList.value =
+                                        it.data.filter { it.market.contains(filteredMarket, true) }
                                 }
                                 is StateResult.Error -> {
                                     _isShowProgressBar.value = false
@@ -70,6 +68,11 @@ class TickerViewModel(
                     }
             }
         }
+    }
+
+    fun replaceTicker(market: String) {
+        filteredMarket = market
+        _tickerList.value = _tickerList.value?.filter { it.market.contains(filteredMarket, true) }
     }
 
     override fun onCleared() {
