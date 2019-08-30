@@ -20,8 +20,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.run {
+            vm = viewModel
+            lifecycleOwner = this@MainActivity
+
             vpMain.adapter = MainPagerAdapter(supportFragmentManager, lifecycle)
-            TabLayoutMediator(tlMain, vpMain, true) { _, _ -> }.attach()
+
+            TabLayoutMediator(tlMain, vpMain, true) { tab, position ->
+                tab.text = (vpMain.adapter as? MainPagerAdapter)?.getPageTitle(position) ?: ""
+                vpMain.setCurrentItem(tab.position, true)
+            }.attach()
         }
 
 /*        supportFragmentManager.commit {

@@ -22,6 +22,7 @@ class MainPagerAdapter(
         }
     }
 
+    fun getPageTitle(position: Int) = items[position].currency
 
     override fun getItem(position: Int): Fragment = TickerFragment.newInstance(items[position])
 

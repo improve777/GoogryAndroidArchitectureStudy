@@ -65,14 +65,24 @@ class UpbitRepository(private val upbitApi: UpbitApi) : UpbitDataSource {
         }
             .catch { e -> emit(StateResult.error(Exception(e))) }
             .map {
-                StateResult.success(
-                    (it as StateResult.Success).data
-                        .groupBy { response: MarketResponse -> response.market.substringBefore("-") }
-                        .map { (key, value) ->
-                            Market(
-                                currency = key,
-                                searchWord = value.joinToString { "," })
-                        }
-                )
+                when (it) {
+                    is StateResult.Success -> {
+                        StateResult.success(
+                            it.data
+                                .groupBy { response: MarketResponse ->
+                                    response.market.substringBefore(
+                                        "-"
+                                    )
+                                }
+                                .map { (key, value) ->
+                                    Market(
+                                        currency = key,
+                                        searchWord = value.joinToString { "," })
+                                }
+                        )
+                    }
+                    is StateResult.Error -> it
+                    is StateResult.Loading -> it
+                }
             }
 }
